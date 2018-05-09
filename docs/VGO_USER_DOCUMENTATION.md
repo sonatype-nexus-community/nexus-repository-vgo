@@ -42,7 +42,7 @@ details. Minimal configuration steps are:
 - Define URL for 'Remote storage' e.g. []()
 - Select a 'Blob store' for 'Storage'
 
-### Configuring Helm 
+### Configuring vgo 
 
 Configuring vgo to use Nexus Repository is fairly easy! Once you have golang and vgo up and running you'll need 
 to add an environment variable similar to the following:
@@ -53,5 +53,5 @@ export GOPROXY=http://localhost:8081/repository/vgo-proxy/
 
 ### Browsing vgo Repository Packages
 
-You can browse Helm repositories in the user interface inspecting the components and assets and their details, as
+You can browse vgo repositories in the user interface inspecting the components and assets and their details, as
 described in [Browsing Repositories and Repository Groups](https://help.sonatype.com/display/NXRM3/Browsing+Repositories+and+Repository+Groups).
