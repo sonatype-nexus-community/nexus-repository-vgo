@@ -52,21 +52,13 @@ public class VgoPathUtils
 
 
   /**
-   * Returns the path from a {@link TokenMatcher.State}.
-   */
-  public String path(final TokenMatcher.State state) {
-    return match(state, "path");
-  }
-
-  /**
    * Builds a vgo asset path from a {@link TokenMatcher.State}.
    */
   public String assetPath(final TokenMatcher.State state) {
-    String path = path(state);
     String module = module(state);
     String version = version(state);
     String extension = extension(state);
-    String fullPath = String.format("%s/%s/@v/%s.%s", path, module, version, extension);
+    String fullPath = String.format("%s/@v/%s.%s", module, version, extension);
 
     return fullPath;
   }

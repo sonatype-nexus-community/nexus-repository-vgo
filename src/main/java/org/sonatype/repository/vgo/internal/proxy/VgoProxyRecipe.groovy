@@ -84,21 +84,21 @@ class VgoProxyRecipe
    * Matcher for .info files
    */
   static Matcher infoMatcher() {
-    createMatcher(VGO_INFO, '.info')
+    createMatcher(VGO_INFO, 'info')
   }
 
   /**
    * Matcher for .mod files
    */
   static Matcher moduleMatcher() {
-    createMatcher(VGO_MODULE, '.mod')
+    createMatcher(VGO_MODULE, 'mod')
   }
 
   /**
    * Matcher for .zip files
    */
   static Matcher packageMatcher() {
-    createMatcher(VGO_PACKAGE, '.zip')
+    createMatcher(VGO_PACKAGE, 'zip')
   }
 
   static Matcher createMatcher(final VgoAssetKind assetKind, final String extension) {
@@ -116,7 +116,7 @@ class VgoProxyRecipe
   }
 
   static TokenMatcher tokenMatcherForExtension(final String extension) {
-    new TokenMatcher("{path:.+}/{module:.+}/@v/{version:.+}.{extension:${extension}}")
+    new TokenMatcher("/{module:.+}/@v/{version:.+}.{extension:${extension}}")
   }
 
   /**
