@@ -22,7 +22,7 @@ import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
  *
  * @since 0.0.1
  */
-public enum AssetKind
+public enum VgoAssetKind
 {
   VGO_PACKAGE(CacheControllerHolder.CONTENT),
   VGO_INFO(CacheControllerHolder.METADATA),
@@ -30,7 +30,7 @@ public enum AssetKind
 
   private final CacheType cacheType;
 
-  AssetKind(final CacheType cacheType) {
+  VgoAssetKind(final CacheType cacheType) {
     this.cacheType = cacheType;
   }
 

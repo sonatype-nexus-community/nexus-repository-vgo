@@ -34,13 +34,13 @@ import org.sonatype.nexus.repository.view.handlers.BrowseUnsupportedHandler
 import org.sonatype.nexus.repository.view.matchers.ActionMatcher
 import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
-import org.sonatype.repository.vgo.AssetKind
+import org.sonatype.repository.vgo.VgoAssetKind
 import org.sonatype.repository.vgo.VgoFormat
 import org.sonatype.repository.vgo.internal.VgoRecipeSupport
 
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
-import static org.sonatype.repository.vgo.AssetKind.*
+import static org.sonatype.repository.vgo.VgoAssetKind.*
 
 /**
  * Vgo proxy repository recipe.
@@ -101,14 +101,14 @@ class VgoProxyRecipe
     createMatcher(VGO_PACKAGE, '.zip')
   }
 
-  static Matcher createMatcher(final AssetKind assetKind, final String extension) {
+  static Matcher createMatcher(final VgoAssetKind assetKind, final String extension) {
     LogicMatchers.and(
         new ActionMatcher(GET, HEAD),
         tokenMatcherForExtension(extension),
         new Matcher() {
           @Override
           boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, assetKind)
+            context.attributes.set(VgoAssetKind.class, assetKind)
             return true
           }
         }

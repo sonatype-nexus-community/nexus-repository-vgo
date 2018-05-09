@@ -22,20 +22,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-public class AssetKindTest
+public class VgoAssetKindTest
     extends TestSupport
 {
-  private AssetKind VGO_PACKAGE;
+  private VgoAssetKind VGO_PACKAGE;
 
-  private AssetKind VGO_MODULE;
+  private VgoAssetKind VGO_MODULE;
 
-  private AssetKind VGO_INFO;
+  private VgoAssetKind VGO_INFO;
 
   @Before
   public void setUp() throws Exception {
-    VGO_PACKAGE = AssetKind.VGO_PACKAGE;
-    VGO_MODULE = AssetKind.VGO_MODULE;
-    VGO_INFO = AssetKind.VGO_INFO;
+    VGO_PACKAGE = VgoAssetKind.VGO_PACKAGE;
+    VGO_MODULE = VgoAssetKind.VGO_MODULE;
+    VGO_INFO = VgoAssetKind.VGO_INFO;
   }
 
   @Test
