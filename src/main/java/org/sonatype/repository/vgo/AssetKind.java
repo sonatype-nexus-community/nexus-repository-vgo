@@ -10,24 +10,32 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.vgo.internal;
+package org.sonatype.repository.vgo;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import javax.annotation.Nonnull;
 
-import org.sonatype.nexus.repository.Format;
+import org.sonatype.nexus.repository.cache.CacheControllerHolder;
+import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
 
 /**
- * Vgo repository format.
+ * Asset kinds for vgo
+ *
+ * @since 0.0.1
  */
-@Named(VgoFormat.NAME)
-@Singleton
-public class VgoFormat
-    extends Format
+public enum AssetKind
 {
-  public static final String NAME = "vgo";
+  VGO_PACKAGE(CacheControllerHolder.CONTENT),
+  VGO_INFO(CacheControllerHolder.METADATA),
+  VGO_MODULE(CacheControllerHolder.METADATA);
 
-  public VgoFormat() {
-    super(NAME);
+  private final CacheType cacheType;
+
+  AssetKind(final CacheType cacheType) {
+    this.cacheType = cacheType;
+  }
+
+  @Nonnull
+  public CacheType getCacheType() {
+    return cacheType;
   }
 }
