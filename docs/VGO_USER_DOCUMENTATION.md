@@ -17,29 +17,30 @@
 ### Introduction
 
 [vgo](https://github.com/golang/go/wiki/vgo) is a package manager used for golang, which allows you to manage dependencies 
-for your golang projects. 
+for your golang projects.
 
 ### Installing vgo
 
-You will need to ensure you have golang 1.10.1 or higher installed, and then run:
+You will need to ensure you have golang 1.11 or higher installed.
+
+Go Module support is still experimental, and needs to be explicitly turned on. You can do this by setting
+the following environment variable like such:
 
 ```
-go get -u golang.org/x/vgo
+GO111MODULE=on
 ```
-
-As well, it helps to add $GOHOME/bin to your path, so you can use vgo anywhere.
 
 ### Proxying vgo Repositories
 
-You can set up an vgo proxy repository to access a remote repository location, for example to proxy packages hosted 
-at []()
+You can set up an vgo proxy repository to access a remote repository location, for example to proxy packages through 
+the [Athens Project](https://athens.azurefd.net/).
 
 To proxy a vgo packages, you simply create a new 'vgo (proxy)' as documented in 
 [Repository Management](https://help.sonatype.com/display/NXRM3/Configuration#Configuration-RepositoryManagement) in
 details. Minimal configuration steps are:
 
 - Define 'Name'
-- Define URL for 'Remote storage' e.g. []()
+- Define URL for 'Remote storage' e.g. [https://athens.azurefd.net/](https://athens.azurefd.net/)
 - Select a 'Blob store' for 'Storage'
 
 ### Configuring vgo 

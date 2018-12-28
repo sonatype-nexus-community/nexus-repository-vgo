@@ -26,6 +26,7 @@ public enum VgoAssetKind
 {
   VGO_PACKAGE(CacheControllerHolder.CONTENT),
   VGO_INFO(CacheControllerHolder.METADATA),
+  VGO_LIST(CacheControllerHolder.METADATA),
   VGO_MODULE(CacheControllerHolder.METADATA);
 
   private final CacheType cacheType;

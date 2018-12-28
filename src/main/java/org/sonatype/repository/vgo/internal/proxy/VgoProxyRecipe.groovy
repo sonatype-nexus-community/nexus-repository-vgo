@@ -38,6 +38,8 @@ import org.sonatype.repository.vgo.VgoAssetKind
 import org.sonatype.repository.vgo.VgoFormat
 import org.sonatype.repository.vgo.internal.VgoRecipeSupport
 
+import org.osgi.service.device.Match
+
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
 import static org.sonatype.repository.vgo.VgoAssetKind.*
@@ -101,6 +103,20 @@ class VgoProxyRecipe
     createMatcher(VGO_PACKAGE, 'zip')
   }
 
+  static Matcher listMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher("/{module:.+}/@v/list"),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(VgoAssetKind.class, VGO_LIST)
+            return true
+          }
+        }
+    )
+  }
+
   static Matcher createMatcher(final VgoAssetKind assetKind, final String extension) {
     LogicMatchers.and(
         new ActionMatcher(GET, HEAD),
@@ -125,7 +141,7 @@ class VgoProxyRecipe
   private ViewFacet configure(final ConfigurableViewFacet facet) {
     Router.Builder builder = new Router.Builder()
 
-    [infoMatcher(), packageMatcher(), moduleMatcher()].each { matcher ->
+    [infoMatcher(), packageMatcher(), moduleMatcher(), listMatcher()].each { matcher ->
       builder.route(new Route.Builder().matcher(matcher)
           .handler(timingHandler)
           .handler(securityHandler)

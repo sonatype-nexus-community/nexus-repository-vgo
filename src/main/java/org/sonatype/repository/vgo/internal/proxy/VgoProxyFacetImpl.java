@@ -77,12 +77,14 @@ public class VgoProxyFacetImpl
   @Override
   protected Content getCachedContent(final Context context) throws IOException {
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
+    TokenMatcher.State matcherState = vgoPathUtils.matcherState(context);
     switch (assetKind) {
       case VGO_INFO:
       case VGO_MODULE:
       case VGO_PACKAGE:
-        TokenMatcher.State matcherState = vgoPathUtils.matcherState(context);
         return getAsset(vgoPathUtils.assetPath(matcherState));
+      case VGO_LIST:
+        return getAsset(vgoPathUtils.listPath(matcherState));
       default:
         throw new IllegalStateException("Received an invalid VgoAssetKind of type: " + assetKind.name());
     }
@@ -96,6 +98,8 @@ public class VgoProxyFacetImpl
       case VGO_INFO:
       case VGO_MODULE:
         return putMetadata(vgoPathUtils.assetPath(matcherState), content, assetKind);
+      case VGO_LIST:
+        return putMetadata(vgoPathUtils.listPath(matcherState), content, assetKind);
       case VGO_PACKAGE:
         VgoAttributes vgoAttributes = getAttributesFromMatcherState(matcherState);
         return putComponent(vgoAttributes, content, vgoPathUtils.assetPath(matcherState), assetKind);

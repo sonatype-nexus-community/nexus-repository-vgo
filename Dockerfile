@@ -1,16 +1,16 @@
-ARG NEXUS_VERSION=3.11.0
+ARG NEXUS_VERSION=3.14.0
 
 FROM maven:3-jdk-8-alpine AS build
-ARG NEXUS_VERSION=3.11.0
-ARG NEXUS_BUILD=01
+ARG NEXUS_VERSION=3.14.0
+ARG NEXUS_BUILD=04
 
 COPY . /nexus-repository-vgo/
-RUN cd /nexus-repository-vgo/; sed -i "s/3.11.0-01/${NEXUS_VERSION}-${NEXUS_BUILD}/g" pom.xml; \
+RUN cd /nexus-repository-vgo/; sed -i "s/3.14.0-04/${NEXUS_VERSION}-${NEXUS_BUILD}/g" pom.xml; \
     mvn clean package;
 
 FROM sonatype/nexus3:$NEXUS_VERSION
-ARG NEXUS_VERSION=3.11.0
-ARG NEXUS_BUILD=01
+ARG NEXUS_VERSION=3.14.0
+ARG NEXUS_BUILD=04
 ARG VGO_VERSION=0.0.1
 ARG TARGET_DIR=/opt/sonatype/nexus/system/org/sonatype/nexus/plugins/nexus-repository-vgo/${VGO_VERSION}/
 USER root

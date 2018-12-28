@@ -64,6 +64,15 @@ public class VgoPathUtils
   }
 
   /**
+   * Builds a vgo list path from a {@link TokenMatcher.State}.
+   */
+  public String listPath(final TokenMatcher.State state) {
+    String module = module(state);
+
+    return String.format("%s/@v/list", module);
+  }
+
+  /**
    * Utility method encapsulating getting a particular token by name from a matcher, including preconditions.
    */
   private String match(final TokenMatcher.State state, final String name) {
