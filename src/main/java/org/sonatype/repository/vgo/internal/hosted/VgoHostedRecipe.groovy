@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.vgo.internal.proxy
+package org.sonatype.repository.vgo.internal.hosted
 
 import javax.annotation.Nonnull
 import javax.inject.Inject
@@ -22,48 +22,30 @@ import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.Repository
 import org.sonatype.nexus.repository.Type
 import org.sonatype.nexus.repository.http.HttpHandlers
-import org.sonatype.nexus.repository.proxy.ProxyHandler
-import org.sonatype.nexus.repository.types.ProxyType
+import org.sonatype.nexus.repository.types.HostedType
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
-import org.sonatype.nexus.repository.view.Context
-import org.sonatype.nexus.repository.view.Matcher
 import org.sonatype.nexus.repository.view.Route
 import org.sonatype.nexus.repository.view.Router
 import org.sonatype.nexus.repository.view.ViewFacet
 import org.sonatype.nexus.repository.view.handlers.BrowseUnsupportedHandler
-import org.sonatype.nexus.repository.view.matchers.ActionMatcher
-import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
-import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
-import org.sonatype.repository.vgo.VgoAssetKind
 import org.sonatype.repository.vgo.VgoFormat
 import org.sonatype.repository.vgo.internal.VgoRecipeSupport
 
-import org.osgi.service.device.Match
-
-import static org.sonatype.nexus.repository.http.HttpMethods.GET
-import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
-import static org.sonatype.repository.vgo.VgoAssetKind.*
-
-/**
- * Vgo proxy repository recipe.
- *
- * @since 0.0.1
- */
-@Named(VgoProxyRecipe.NAME)
+@Named(VgoHostedRecipe.NAME)
 @Singleton
-class VgoProxyRecipe
+class VgoHostedRecipe
   extends VgoRecipeSupport
 {
-  private static final String NAME = 'vgo-proxy'
+  private static final String NAME = 'vgo-hosted'
 
   @Inject
-  Provider<VgoProxyFacetImpl> proxyFacet
+  HostedHandlers hostedHandlers
 
   @Inject
-  ProxyHandler proxyHandler
+  Provider<VgoHostedFacetImpl> hostedFacet
 
   @Inject
-  VgoProxyRecipe(@Named(ProxyType.NAME) final Type type,
+  VgoHostedRecipe(@Named(HostedType.NAME) final Type type,
                   @Named(VgoFormat.NAME) final Format format) {
     super(type, format)
   }
@@ -73,12 +55,10 @@ class VgoProxyRecipe
     repository.attach(securityFacet.get())
     repository.attach(configure(viewFacet.get()))
     repository.attach(httpClientFacet.get())
-    repository.attach(negativeCacheFacet.get())
     repository.attach(componentMaintenanceFacet.get())
-    repository.attach(proxyFacet.get())
     repository.attach(storageFacet.get())
+    repository.attach(hostedFacet.get())
     repository.attach(searchFacet.get())
-    repository.attach(purgeUnusedFacet.get())
     repository.attach(attributesFacet.get())
   }
 
@@ -94,13 +74,24 @@ class VgoProxyRecipe
           .handler(securityHandler)
           .handler(exceptionHandler)
           .handler(handlerContributor)
-          .handler(negativeCacheHandler)
           .handler(partialFetchHandler)
           .handler(contentHeadersHandler)
           .handler(unitOfWorkHandler)
-          .handler(proxyHandler)
+          .handler(hostedHandlers.get)
           .create())
     }
+
+    builder.route(new Route.Builder().matcher(moduleUploadMatcher())
+        .handler(timingHandler)
+        .handler(securityHandler)
+        .handler(exceptionHandler)
+        .handler(handlerContributor)
+        .handler(conditionalRequestHandler)
+        .handler(partialFetchHandler)
+        .handler(contentHeadersHandler)
+        .handler(unitOfWorkHandler)
+        .handler(hostedHandlers.upload)
+        .create())
 
     builder.route(new Route.Builder()
         .matcher(BrowseUnsupportedHandler.MATCHER)

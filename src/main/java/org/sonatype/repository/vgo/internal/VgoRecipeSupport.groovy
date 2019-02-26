@@ -15,6 +15,12 @@ package org.sonatype.repository.vgo.internal
 import javax.inject.Inject
 import javax.inject.Provider
 
+import org.sonatype.nexus.repository.view.Context
+import org.sonatype.nexus.repository.view.Matcher
+import org.sonatype.nexus.repository.view.matchers.ActionMatcher
+import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
+import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
+import org.sonatype.repository.vgo.VgoAssetKind
 import org.sonatype.repository.vgo.internal.security.VgoSecurityFacet
 
 import org.sonatype.nexus.repository.Format
@@ -38,6 +44,13 @@ import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
+
+import static org.sonatype.nexus.repository.http.HttpMethods.GET
+import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
+import static org.sonatype.repository.vgo.VgoAssetKind.VGO_INFO
+import static org.sonatype.repository.vgo.VgoAssetKind.VGO_LIST
+import static org.sonatype.repository.vgo.VgoAssetKind.VGO_MODULE
+import static org.sonatype.repository.vgo.VgoAssetKind.VGO_PACKAGE
 
 /**
  * Support for Vgo recipes.
@@ -104,5 +117,58 @@ abstract class VgoRecipeSupport
 
   protected VgoRecipeSupport(final Type type, final Format format) {
     super(type, format)
+  }
+
+  /**
+   * Matcher for .zip files
+   */
+  static Matcher packageMatcher() {
+    createMatcher(VGO_PACKAGE, 'zip')
+  }
+
+  /**
+   * Matcher for .info files
+   */
+  static Matcher infoMatcher() {
+    createMatcher(VGO_INFO, 'info')
+  }
+
+  /**
+   * Matcher for .mod files
+   */
+  static Matcher moduleMatcher() {
+    createMatcher(VGO_MODULE, 'mod')
+  }
+
+  static Matcher listMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher("/{module:.+}/@v/list"),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(VgoAssetKind.class, VGO_LIST)
+            return true
+          }
+        }
+    )
+  }
+
+  static Matcher createMatcher(final VgoAssetKind assetKind, final String extension) {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        tokenMatcherForExtension(extension),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(VgoAssetKind.class, assetKind)
+            return true
+          }
+        }
+    )
+  }
+
+  static TokenMatcher tokenMatcherForExtension(final String extension) {
+    new TokenMatcher("/{module:.+}/@v/{version:.+}.{extension:${extension}}")
   }
 }
