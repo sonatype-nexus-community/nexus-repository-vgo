@@ -17,6 +17,7 @@ import javax.inject.Singleton;
 
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
+import org.sonatype.repository.vgo.internal.metadata.VgoAttributes;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -87,5 +88,19 @@ public class VgoPathUtils
    */
   public TokenMatcher.State matcherState(final Context context) {
     return context.getAttributes().require(TokenMatcher.State.class);
+  }
+
+  /**
+   * Returns the module name and version from a given {@link TokenMatcher.State}
+   *
+   * @param state
+   * @return {@link VgoAttributes}
+   */
+  public VgoAttributes getAttributesFromMatcherState(final TokenMatcher.State state) {
+    VgoAttributes vgoAttributes = new VgoAttributes();
+    vgoAttributes.setModule(module(state));
+    vgoAttributes.setVersion(version(state));
+
+    return vgoAttributes;
   }
 }

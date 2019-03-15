@@ -30,15 +30,21 @@ import org.sonatype.nexus.repository.storage.Component;
 import org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter;
 import org.sonatype.nexus.repository.storage.Query;
 import org.sonatype.nexus.repository.storage.StorageTx;
+import org.sonatype.nexus.repository.storage.TempBlob;
+import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.BlobPayload;
+import org.sonatype.nexus.transaction.UnitOfWork;
+import org.sonatype.repository.vgo.VgoAssetKind;
+import org.sonatype.repository.vgo.internal.metadata.VgoAttributes;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 import static java.util.Collections.singletonList;
 import static org.sonatype.nexus.common.hash.HashAlgorithm.SHA1;
+import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
 import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_VERSION;
 import static org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter.P_NAME;
 
@@ -134,5 +140,37 @@ public class VgoDataAccess
     Content content = new Content(new BlobPayload(blob, asset.requireContentType()));
     Content.extractFromAsset(asset, HASH_ALGORITHMS, content.getAttributes());
     return content;
+  }
+
+  @TransactionalStoreBlob
+  public Content doCreateOrSaveComponent(final Repository repository,
+                                         final VgoAttributes vgoAttributes,
+                                         final String assetPath,
+                                         final TempBlob componentContent,
+                                         final Payload payload,
+                                         final VgoAssetKind assetKind) throws IOException
+  {
+    StorageTx tx = UnitOfWork.currentTx();
+    Bucket bucket = tx.findBucket(repository);
+
+    Component component = findComponent(tx,
+        repository,
+        vgoAttributes.getModule(),
+        vgoAttributes.getVersion());
+
+    if (component == null) {
+      component = tx.createComponent(bucket, repository.getFormat())
+          .name(vgoAttributes.getModule())
+          .version(vgoAttributes.getVersion());
+    }
+    tx.saveComponent(component);
+
+    Asset asset = findAsset(tx, bucket, assetPath);
+    if (asset == null) {
+      asset = tx.createAsset(bucket, component);
+      asset.name(assetPath);
+      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+    }
+    return saveAsset(tx, asset, componentContent, payload);
   }
 }

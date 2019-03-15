@@ -81,7 +81,7 @@ class VgoHostedRecipe
           .create())
     }
 
-    builder.route(new Route.Builder().matcher(moduleUploadMatcher())
+    builder.route(new Route.Builder().matcher(uploadMatcher())
         .handler(timingHandler)
         .handler(securityHandler)
         .handler(exceptionHandler)

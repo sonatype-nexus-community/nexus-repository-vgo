@@ -101,7 +101,7 @@ public class VgoProxyFacetImpl
       case VGO_LIST:
         return putMetadata(vgoPathUtils.listPath(matcherState), content, assetKind);
       case VGO_PACKAGE:
-        VgoAttributes vgoAttributes = getAttributesFromMatcherState(matcherState);
+        VgoAttributes vgoAttributes = vgoPathUtils.getAttributesFromMatcherState(matcherState);
         return putComponent(vgoAttributes, content, vgoPathUtils.assetPath(matcherState), assetKind);
       default:
         throw new IllegalStateException("Received an invalid VgoAssetKind of type: " + assetKind.name());
@@ -154,47 +154,13 @@ public class VgoProxyFacetImpl
                                final VgoAssetKind assetKind) throws IOException {
     StorageFacet storageFacet = facet(StorageFacet.class);
     try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), HASH_ALGORITHMS)) {
-      return doCreateOrSaveComponent(vgoAttributes, assetPath, tempBlob, content, assetKind);
+      return vgoDataAccess.doCreateOrSaveComponent(getRepository(),
+          vgoAttributes,
+          assetPath,
+          tempBlob,
+          content,
+          assetKind);
     }
-  }
-
-  protected VgoAttributes getAttributesFromMatcherState(final TokenMatcher.State state) {
-      VgoAttributes vgoAttributes = new VgoAttributes();
-      vgoAttributes.setModule(vgoPathUtils.module(state));
-      vgoAttributes.setVersion(vgoPathUtils.version(state));
-
-      return vgoAttributes;
-  }
-
-  @TransactionalStoreBlob
-  protected Content doCreateOrSaveComponent(final VgoAttributes vgoAttributes,
-                                            final String assetPath,
-                                            final TempBlob componentContent,
-                                            final Payload payload,
-                                            final VgoAssetKind assetKind) throws IOException
-  {
-    StorageTx tx = UnitOfWork.currentTx();
-    Bucket bucket = tx.findBucket(getRepository());
-
-    Component component = vgoDataAccess.findComponent(tx,
-        getRepository(),
-        vgoAttributes.getModule(),
-        vgoAttributes.getVersion());
-
-    if (component == null) {
-      component = tx.createComponent(bucket, getRepository().getFormat())
-          .name(vgoAttributes.getModule())
-          .version(vgoAttributes.getVersion());
-    }
-    tx.saveComponent(component);
-
-    Asset asset = vgoDataAccess.findAsset(tx, bucket, assetPath);
-    if (asset == null) {
-      asset = tx.createAsset(bucket, component);
-      asset.name(assetPath);
-      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
-    }
-    return vgoDataAccess.saveAsset(tx, asset, componentContent, payload);
   }
 
   @Override

@@ -47,6 +47,7 @@ import org.sonatype.nexus.repository.view.handlers.TimingHandler
 
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
+import static org.sonatype.nexus.repository.http.HttpMethods.PUT
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_INFO
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_LIST
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_MODULE
@@ -140,6 +141,19 @@ abstract class VgoRecipeSupport
     createMatcher(VGO_MODULE, 'mod')
   }
 
+  static Matcher uploadMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(PUT),
+        tokenMatcherForExtension('zip'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(VgoAssetKind.class, VGO_PACKAGE)
+            return true
+          }
+        }
+    )
+  }
   static Matcher listMatcher() {
     LogicMatchers.and(
         new ActionMatcher(GET, HEAD),

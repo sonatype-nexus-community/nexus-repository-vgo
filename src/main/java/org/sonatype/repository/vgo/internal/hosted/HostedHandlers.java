@@ -22,6 +22,7 @@ import org.sonatype.nexus.repository.view.Handler;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher.State;
 import org.sonatype.repository.vgo.VgoAssetKind;
+import org.sonatype.repository.vgo.internal.metadata.VgoAttributes;
 import org.sonatype.repository.vgo.internal.util.VgoPathUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -39,14 +40,22 @@ public class HostedHandlers
   public HostedHandlers(final VgoPathUtils pathUtils) { this.pathUtils = checkNotNull(pathUtils); }
 
   final Handler get = context -> {
-    VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
-    String path;
-
     State state = context.getAttributes().require(TokenMatcher.State.class);
+    String path = pathUtils.assetPath(state);
+    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
 
-    path = pathUtils.assetPath(state);
-
-    Content content = context.getRepository().facet(VgoHostedFacet.class).get(path);
+    VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
+    Content content;
+    switch (assetKind) {
+      case VGO_INFO:
+        content = context.getRepository().facet(VgoHostedFacet.class).getInfo(path, vgoAttributes);
+        break;
+      case VGO_PACKAGE:
+        content = context.getRepository().facet(VgoHostedFacet.class).get(path);
+        break;
+      default:
+        return notFound();
+    }
 
     return (content != null) ? ok(content) : notFound();
   };
@@ -54,9 +63,10 @@ public class HostedHandlers
   final Handler upload = context -> {
     State state = context.getAttributes().require(TokenMatcher.State.class);
     String path = pathUtils.assetPath(state);
+    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
 
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
-    context.getRepository().facet(VgoHostedFacet.class).upload(path, context.getRequest().getPayload(), assetKind);
+    context.getRepository().facet(VgoHostedFacet.class).upload(path, vgoAttributes, context.getRequest().getPayload(), assetKind);
 
     return ok();
   };
