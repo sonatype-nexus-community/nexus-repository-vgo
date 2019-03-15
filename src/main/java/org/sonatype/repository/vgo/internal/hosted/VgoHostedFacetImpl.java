@@ -15,6 +15,8 @@ package org.sonatype.repository.vgo.internal.hosted;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -89,6 +91,36 @@ public class VgoHostedFacetImpl
     return new Content(streamPayload);
   }
 
+  @Transactional
+  @Override
+  public Content getList(final String module) {
+    checkNotNull(module);
+
+    StorageTx tx = UnitOfWork.currentTx();
+
+    Iterable<Asset> assetsForModule = vgoDataAccess.findPackageAssetsForModule(tx, getRepository(), module);
+
+    String listOfVersions = StreamSupport.stream(assetsForModule.spliterator(), false)
+        .map(asset -> asset.name())
+        .map(name -> name.split("/@v/")[1])
+        .map((name -> name.replaceAll(".zip", "")))
+        .collect(Collectors.joining("\n"));
+
+    return new Content(
+      new StreamPayload(
+          new InputStreamSupplier() {
+            @Nonnull
+            @Override
+            public InputStream get() {
+              return new ByteArrayInputStream(listOfVersions.getBytes());
+            }
+          },
+          UNKNOWN_SIZE,
+          ContentTypes.TEXT_PLAIN
+      )
+    );
+  }
+
   private InputStream doGetInfo(final Asset asset, final VgoAttributes vgoAttributes) {
     VgoInfo vgoInfo = new VgoInfo(vgoAttributes.getVersion(), asset.blobCreated().toString());
     try {
@@ -104,7 +136,18 @@ public class VgoHostedFacetImpl
   @Nullable
   @TransactionalTouchBlob
   @Override
-  public Content get(final String path) {
+  public Content getPackage(final String path) {
+    return doGet(path);
+  }
+
+  @Nullable
+  @TransactionalTouchBlob
+  @Override
+  public Content getMod(final String path) {
+    return doGet(path);
+  }
+
+  private Content doGet(final String path) {
     checkNotNull(path);
     StorageTx tx = UnitOfWork.currentTx();
 

@@ -42,6 +42,7 @@ import org.sonatype.repository.vgo.internal.metadata.VgoAttributes;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.sonatype.nexus.common.hash.HashAlgorithm.SHA1;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
@@ -90,6 +91,11 @@ public class VgoDataAccess
   @Nullable
   public Asset findAsset(final StorageTx tx, final Bucket bucket, final String assetName) {
     return tx.findAssetWithProperty(MetadataNodeEntityAdapter.P_NAME, assetName, bucket);
+  }
+
+  public Iterable<Asset> findPackageAssetsForModule(final StorageTx tx, final Repository repository, final String moduleName) {
+    Query query = Query.builder().where(format("name LIKE '%s/%%'", moduleName)).build();
+    return tx.findAssets(query, ImmutableList.of(repository));
   }
 
   /**

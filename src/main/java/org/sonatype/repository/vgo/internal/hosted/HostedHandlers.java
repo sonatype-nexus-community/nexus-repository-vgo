@@ -18,6 +18,7 @@ import javax.inject.Singleton;
 
 import org.sonatype.goodies.common.ComponentSupport;
 import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Handler;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher.State;
@@ -40,25 +41,60 @@ public class HostedHandlers
   public HostedHandlers(final VgoPathUtils pathUtils) { this.pathUtils = checkNotNull(pathUtils); }
 
   final Handler get = context -> {
-    State state = context.getAttributes().require(TokenMatcher.State.class);
-    String path = pathUtils.assetPath(state);
-    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
-
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
-    Content content;
+    Content content = null;
     switch (assetKind) {
       case VGO_INFO:
-        content = context.getRepository().facet(VgoHostedFacet.class).getInfo(path, vgoAttributes);
+        content = getInfo(context);
+        break;
+      case VGO_MODULE:
+        content = getModule(context);
         break;
       case VGO_PACKAGE:
-        content = context.getRepository().facet(VgoHostedFacet.class).get(path);
+        content = getPackage(context);
         break;
-      default:
-        return notFound();
+      case VGO_LIST:
+        content = getList(context);
+        break;
     }
 
     return (content != null) ? ok(content) : notFound();
   };
+
+  private Content getList(final Context context) {
+    Content content;
+    State state = context.getAttributes().require(State.class);
+    String module = pathUtils.module(state);
+    content = context.getRepository().facet(VgoHostedFacet.class).getList(module);
+    return content;
+  }
+
+  private Content getPackage(final Context context) {
+    Content content;
+    State state = context.getAttributes().require(State.class);
+    String path = pathUtils.assetPath(state);
+    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
+    content = context.getRepository().facet(VgoHostedFacet.class).getPackage(path);
+    return content;
+  }
+
+  private Content getModule(final Context context) {
+    Content content;
+    State state = context.getAttributes().require(State.class);
+    String path = pathUtils.assetPath(state);
+    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
+    content = context.getRepository().facet(VgoHostedFacet.class).getMod(path);
+    return content;
+  }
+
+  private Content getInfo(final Context context) {
+    Content content;
+    State state = context.getAttributes().require(State.class);
+    String path = pathUtils.assetPath(state);
+    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
+    content = context.getRepository().facet(VgoHostedFacet.class).getInfo(path, vgoAttributes);
+    return content;
+  }
 
   final Handler upload = context -> {
     State state = context.getAttributes().require(TokenMatcher.State.class);

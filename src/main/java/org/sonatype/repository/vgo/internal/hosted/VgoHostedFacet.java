@@ -25,9 +25,13 @@ import org.sonatype.repository.vgo.internal.metadata.VgoAttributes;
 public interface VgoHostedFacet
     extends Facet
 {
-  Content get(String path);
+  Content getPackage(final String path);
 
-  Content getInfo(String path, final VgoAttributes vgoAttributes);
+  Content getMod(final String path);
 
-  void upload(final String path, VgoAttributes vgoAttributes, Payload payload, final VgoAssetKind assetKind) throws IOException;
+  Content getInfo(final String path, final VgoAttributes vgoAttributes);
+
+  Content getList(final String module);
+
+  void upload(final String path, final VgoAttributes vgoAttributes, final Payload payload, final VgoAssetKind assetKind) throws IOException;
 }
