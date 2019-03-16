@@ -33,7 +33,6 @@ import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.Payload;
-import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload.InputStreamSupplier;
 import org.sonatype.nexus.transaction.Transactional;
@@ -235,6 +234,6 @@ public class VgoHostedFacetImpl
       log.warn("Unable to find %s for extraction", path);
       return null;
     }
-    return new BlobPayload(tx.requireBlob(asset.requireBlobRef()), asset.requireContentType());
+    return vgoDataAccess.getBlobAsPayload(tx, asset);
   }
 }

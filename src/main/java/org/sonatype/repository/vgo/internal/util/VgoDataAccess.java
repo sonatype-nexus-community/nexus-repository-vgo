@@ -179,4 +179,8 @@ public class VgoDataAccess
     }
     return saveAsset(tx, asset, componentContent, payload);
   }
+
+  public Payload getBlobAsPayload(final StorageTx tx, final Asset asset) {
+    return new BlobPayload(tx.requireBlob(asset.requireBlobRef()), asset.requireContentType());
+  }
 }
