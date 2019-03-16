@@ -33,6 +33,7 @@ import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.Payload;
+import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload.InputStreamSupplier;
 import org.sonatype.nexus.transaction.Transactional;
@@ -40,6 +41,7 @@ import org.sonatype.nexus.transaction.UnitOfWork;
 import org.sonatype.repository.vgo.VgoAssetKind;
 import org.sonatype.repository.vgo.internal.metadata.VgoAttributes;
 import org.sonatype.repository.vgo.internal.metadata.VgoInfo;
+import org.sonatype.repository.vgo.internal.util.CompressedContentExtractor;
 import org.sonatype.repository.vgo.internal.util.VgoDataAccess;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,6 +50,7 @@ import org.apache.http.impl.io.EmptyInputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.sonatype.nexus.repository.view.Payload.UNKNOWN_SIZE;
+import static org.sonatype.repository.vgo.VgoAssetKind.VGO_MODULE;
 import static org.sonatype.repository.vgo.internal.util.VgoDataAccess.HASH_ALGORITHMS;
 
 @Named
@@ -175,17 +178,58 @@ public class VgoHostedFacetImpl
       throw new IllegalArgumentException("Unsupported AssetKind");
     }
 
-    storeModule(path, vgoAttributes, payload, assetKind);
+    storeContent(path, vgoAttributes, payload, assetKind);
   }
 
-  private void storeModule(final String path,
-                           final VgoAttributes vgoAttributes,
-                           final Payload payload,
-                           final VgoAssetKind assetKind) throws IOException
+  private void storeContent(final String path,
+                            final VgoAttributes vgoAttributes,
+                            final Payload payload,
+                            final VgoAssetKind assetKind) throws IOException
   {
     StorageFacet storageFacet = facet(StorageFacet.class);
     try (TempBlob tempBlob = storageFacet.createTempBlob(payload.openInputStream(), HASH_ALGORITHMS)) {
       vgoDataAccess.doCreateOrSaveComponent(getRepository(), vgoAttributes, path, tempBlob, payload, assetKind);
     }
+
+    extractAndSaveMod(path, vgoAttributes);
+  }
+
+  private void extractAndSaveMod(final String path, final VgoAttributes vgoAttributes) {
+    Payload content = getZip(path);
+
+    if (content != null) {
+      try (InputStream contentStream = content.openInputStream()){
+        InputStream goModStream = CompressedContentExtractor.extractFile(contentStream, "go.mod");
+
+        if (goModStream != null) {
+          storeContent(path.replaceAll("\\.zip", "\\.mod"),
+              vgoAttributes,
+              new StreamPayload(new InputStreamSupplier()
+              {
+                @Nonnull
+                @Override
+                public InputStream get() {
+                  return goModStream;
+                }
+              }, UNKNOWN_SIZE, ContentTypes.TEXT_PLAIN),
+              VGO_MODULE);
+        }
+      }
+      catch (IOException e) {
+        log.warn(String.format("Unable to open content %s", path), e);
+      }
+    }
+  }
+
+  @TransactionalTouchBlob
+  protected Payload getZip(final String path) {
+    StorageTx tx = UnitOfWork.currentTx();
+
+    Asset asset = vgoDataAccess.findAsset(tx, tx.findBucket(getRepository()), path);
+    if (asset == null) {
+      log.warn("Unable to find %s for extraction", path);
+      return null;
+    }
+    return new BlobPayload(tx.requireBlob(asset.requireBlobRef()), asset.requireContentType());
   }
 }
