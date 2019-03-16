@@ -53,6 +53,11 @@ import static org.sonatype.nexus.repository.view.Payload.UNKNOWN_SIZE;
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_MODULE;
 import static org.sonatype.repository.vgo.internal.util.VgoDataAccess.HASH_ALGORITHMS;
 
+/**
+ * Vgo hosted implementation
+ *
+ * @since 0.0.2
+ */
 @Named
 public class VgoHostedFacetImpl
     extends FacetSupport

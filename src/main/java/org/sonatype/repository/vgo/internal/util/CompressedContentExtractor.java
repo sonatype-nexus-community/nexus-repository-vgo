@@ -24,11 +24,22 @@ import org.sonatype.goodies.common.Loggers;
 
 import org.slf4j.Logger;
 
+/**
+ * Extracts a file from a zip image
+ *
+ * @since 0.0.2
+ */
 public class CompressedContentExtractor
     extends ComponentSupport
 {
   private static final Logger logger = Loggers.getLogger(CompressedContentExtractor.class);
 
+  /**
+   * Extracrts a file from a zip image
+   * @param projectAsStream zip file as a stream
+   * @param fileName file to extract
+   * @return stream of extracted file
+   */
   public static InputStream extractFile(final InputStream projectAsStream, final String fileName) {
     try (ZipInputStream zipInputStream = new ZipInputStream(projectAsStream)) {
       ZipEntry nextEntry = zipInputStream.getNextEntry();
