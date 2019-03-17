@@ -10,24 +10,31 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.vgo.internal;
-
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import org.sonatype.nexus.repository.Format;
+package org.sonatype.repository.vgo.internal.metadata;
 
 /**
- * Vgo repository format.
+ * Object for storing Vgo specific attributes
+ *
+ * @since 0.0.1
  */
-@Named(VgoFormat.NAME)
-@Singleton
-public class VgoFormat
-    extends Format
+public final class VgoAttributes
 {
-  public static final String NAME = "vgo";
+  private String module;
+  private String version;
 
-  public VgoFormat() {
-    super(NAME);
+  public String getModule() {
+    return module;
+  }
+
+  public void setModule(final String module) {
+    this.module = module;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public void setVersion(final String version) {
+    this.version = version;
   }
 }

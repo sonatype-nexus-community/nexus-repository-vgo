@@ -12,6 +12,8 @@
  */
 package org.sonatype.repository.vgo.internal;
 
+import org.sonatype.repository.vgo.VgoFormat;
+
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
