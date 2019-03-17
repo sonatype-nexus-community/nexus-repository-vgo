@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.vgo.internal.proxy
+package org.sonatype.repository.vgo.internal.group
 
 import javax.annotation.Nonnull
 import javax.inject.Inject
@@ -21,9 +21,10 @@ import javax.inject.Singleton
 import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.Repository
 import org.sonatype.nexus.repository.Type
+import org.sonatype.nexus.repository.group.GroupFacetImpl
+import org.sonatype.nexus.repository.group.GroupHandler
 import org.sonatype.nexus.repository.http.HttpHandlers
-import org.sonatype.nexus.repository.proxy.ProxyHandler
-import org.sonatype.nexus.repository.types.ProxyType
+import org.sonatype.nexus.repository.types.GroupType
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
 import org.sonatype.nexus.repository.view.Route
 import org.sonatype.nexus.repository.view.Router
@@ -33,43 +34,38 @@ import org.sonatype.repository.vgo.VgoFormat
 import org.sonatype.repository.vgo.internal.VgoRecipeSupport
 
 /**
- * Vgo proxy repository recipe.
+ * Vgo group repository recipe.
  *
- * @since 0.0.1
+ * @since 0.0.2
  */
-@Named(VgoProxyRecipe.NAME)
+@Named(VgoGroupRecipe.NAME)
 @Singleton
-class VgoProxyRecipe
+class VgoGroupRecipe
   extends VgoRecipeSupport
 {
-  private static final String NAME = 'vgo-proxy'
+  private static final String NAME = 'vgo-group'
 
   @Inject
-  Provider<VgoProxyFacetImpl> proxyFacet
+  Provider<GroupFacetImpl> groupFacet
+
 
   @Inject
-  ProxyHandler proxyHandler
+  GroupHandler groupHandler
 
   @Inject
-  VgoProxyRecipe(@Named(ProxyType.NAME) final Type type,
-                  @Named(VgoFormat.NAME) final Format format) {
+  VgoGroupRecipe(@Named(GroupType.NAME) final Type type,
+                 @Named(VgoFormat.NAME) final Format format) {
     super(type, format)
   }
 
   @Override
   void apply(@Nonnull final Repository repository) throws Exception {
+    repository.attach(groupFacet.get())
+    repository.attach(storageFacet.get())
     repository.attach(securityFacet.get())
     repository.attach(configure(viewFacet.get()))
-    repository.attach(httpClientFacet.get())
-    repository.attach(negativeCacheFacet.get())
-    repository.attach(componentMaintenanceFacet.get())
-    repository.attach(proxyFacet.get())
-    repository.attach(storageFacet.get())
-    repository.attach(searchFacet.get())
-    repository.attach(purgeUnusedFacet.get())
     repository.attach(attributesFacet.get())
   }
-
 
   /**
    * Configure {@link ViewFacet}.
@@ -83,11 +79,7 @@ class VgoProxyRecipe
           .handler(securityHandler)
           .handler(exceptionHandler)
           .handler(handlerContributor)
-          .handler(negativeCacheHandler)
-          .handler(partialFetchHandler)
-          .handler(contentHeadersHandler)
-          .handler(unitOfWorkHandler)
-          .handler(proxyHandler)
+          .handler(groupHandler)
           .create())
     }
 
