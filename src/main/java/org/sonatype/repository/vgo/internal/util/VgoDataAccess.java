@@ -122,11 +122,11 @@ public class VgoDataAccess
    *
    * @return blob content
    */
-  public Content saveAsset(final StorageTx tx,
-                           final Asset asset,
-                           final Supplier<InputStream> contentSupplier,
-                           final String contentType,
-                           @Nullable final AttributesMap contentAttributes) throws IOException
+  private Content saveAsset(final StorageTx tx,
+                            final Asset asset,
+                            final Supplier<InputStream> contentSupplier,
+                            final String contentType,
+                            @Nullable final AttributesMap contentAttributes) throws IOException
   {
     Content.applyToAsset(asset, Content.maintainLastModified(asset, contentAttributes));
     AssetBlob assetBlob = tx.setBlob(

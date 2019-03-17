@@ -24,17 +24,13 @@ import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.proxy.ProxyFacet;
 import org.sonatype.nexus.repository.proxy.ProxyFacetSupport;
 import org.sonatype.nexus.repository.storage.Asset;
-import org.sonatype.nexus.repository.storage.Bucket;
-import org.sonatype.nexus.repository.storage.Component;
 import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.storage.TempBlob;
-import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Context;
-import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.transaction.UnitOfWork;
 import org.sonatype.repository.vgo.VgoAssetKind;
@@ -43,7 +39,6 @@ import org.sonatype.repository.vgo.internal.util.VgoDataAccess;
 import org.sonatype.repository.vgo.internal.util.VgoPathUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
 import static org.sonatype.repository.vgo.internal.util.VgoDataAccess.HASH_ALGORITHMS;
 
 /**
@@ -94,15 +89,14 @@ public class VgoProxyFacetImpl
   protected Content store(final Context context, final Content content) throws IOException {
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
     TokenMatcher.State matcherState = vgoPathUtils.matcherState(context);
+    VgoAttributes vgoAttributes = vgoPathUtils.getAttributesFromMatcherState(matcherState);
     switch(assetKind) {
       case VGO_INFO:
       case VGO_MODULE:
-        return putMetadata(vgoPathUtils.assetPath(matcherState), content, assetKind);
-      case VGO_LIST:
-        return putMetadata(vgoPathUtils.listPath(matcherState), content, assetKind);
       case VGO_PACKAGE:
-        VgoAttributes vgoAttributes = vgoPathUtils.getAttributesFromMatcherState(matcherState);
         return putComponent(vgoAttributes, content, vgoPathUtils.assetPath(matcherState), assetKind);
+      case VGO_LIST:
+        return putComponent(vgoAttributes, content, vgoPathUtils.listPath(matcherState), assetKind);
       default:
         throw new IllegalStateException("Received an invalid VgoAssetKind of type: " + assetKind.name());
     }
@@ -120,32 +114,6 @@ public class VgoProxyFacetImpl
       tx.saveAsset(asset);
     }
     return vgoDataAccess.toContent(asset, tx.requireBlob(asset.requireBlobRef()));
-  }
-
-  private Content putMetadata(final String path, final Content content, final VgoAssetKind assetKind) throws IOException {
-    StorageFacet storageFacet = facet(StorageFacet.class);
-    try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), HASH_ALGORITHMS)) {
-      return saveMetadataAsAsset(path, tempBlob, content, assetKind);
-    }
-  }
-
-  @TransactionalStoreBlob
-  protected Content saveMetadataAsAsset(final String assetPath,
-                                        final TempBlob metadataContent,
-                                        final Payload payload,
-                                        final VgoAssetKind assetKind) throws IOException
-  {
-    StorageTx tx = UnitOfWork.currentTx();
-    Bucket bucket = tx.findBucket(getRepository());
-
-    Asset asset = vgoDataAccess.findAsset(tx, bucket, assetPath);
-    if (asset == null) {
-      asset = tx.createAsset(bucket, getRepository().getFormat());
-      asset.name(assetPath);
-      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
-    }
-
-    return vgoDataAccess.saveAsset(tx, asset, metadataContent, payload);
   }
 
   private Content putComponent(final VgoAttributes vgoAttributes,
