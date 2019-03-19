@@ -37,6 +37,7 @@ import org.sonatype.nexus.repository.view.handlers.ConditionalRequestHandler
 import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
+import org.sonatype.nexus.repository.view.handlers.LastDownloadedHandler
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
 import org.sonatype.nexus.repository.view.matchers.ActionMatcher
 import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
@@ -46,6 +47,7 @@ import org.sonatype.repository.vgo.internal.security.VgoSecurityFacet
 
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
+import static org.sonatype.nexus.repository.http.HttpMethods.PUT
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_INFO
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_LIST
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_MODULE
@@ -114,8 +116,18 @@ abstract class VgoRecipeSupport
   @Inject
   NegativeCacheHandler negativeCacheHandler
 
+  @Inject
+  LastDownloadedHandler lastDownloadedHandler
+
   protected VgoRecipeSupport(final Type type, final Format format) {
     super(type, format)
+  }
+
+  /**
+   * Matcher for .zip files
+   */
+  static Matcher packageMatcher() {
+    createMatcher(VGO_PACKAGE, 'zip')
   }
 
   /**
@@ -132,13 +144,19 @@ abstract class VgoRecipeSupport
     createMatcher(VGO_MODULE, 'mod')
   }
 
-  /**
-   * Matcher for .zip files
-   */
-  static Matcher packageMatcher() {
-    createMatcher(VGO_PACKAGE, 'zip')
+  static Matcher uploadMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(PUT),
+        tokenMatcherForExtension('zip'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(VgoAssetKind.class, VGO_PACKAGE)
+            return true
+          }
+        }
+    )
   }
-
   static Matcher listMatcher() {
     LogicMatchers.and(
         new ActionMatcher(GET, HEAD),
