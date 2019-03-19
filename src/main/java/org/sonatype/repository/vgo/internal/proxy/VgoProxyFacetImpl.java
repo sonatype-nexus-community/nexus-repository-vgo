@@ -110,9 +110,7 @@ public class VgoProxyFacetImpl
     if (asset == null) {
       return null;
     }
-    if (asset.markAsDownloaded()) {
-      tx.saveAsset(asset);
-    }
+
     return vgoDataAccess.toContent(asset, tx.requireBlob(asset.requireBlobRef()));
   }
 

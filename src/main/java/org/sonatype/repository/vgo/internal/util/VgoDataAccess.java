@@ -141,7 +141,6 @@ public class VgoDataAccess
     AssetBlob assetBlob = tx.setBlob(
         asset, asset.name(), contentSupplier, HASH_ALGORITHMS, null, contentType, false
     );
-    asset.markAsDownloaded();
     tx.saveAsset(asset);
     return toContent(asset, assetBlob.getBlob());
   }

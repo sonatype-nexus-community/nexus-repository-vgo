@@ -25,24 +25,12 @@ import org.sonatype.nexus.repository.http.HttpHandlers
 import org.sonatype.nexus.repository.proxy.ProxyHandler
 import org.sonatype.nexus.repository.types.ProxyType
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
-import org.sonatype.nexus.repository.view.Context
-import org.sonatype.nexus.repository.view.Matcher
 import org.sonatype.nexus.repository.view.Route
 import org.sonatype.nexus.repository.view.Router
 import org.sonatype.nexus.repository.view.ViewFacet
 import org.sonatype.nexus.repository.view.handlers.BrowseUnsupportedHandler
-import org.sonatype.nexus.repository.view.matchers.ActionMatcher
-import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
-import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
-import org.sonatype.repository.vgo.VgoAssetKind
 import org.sonatype.repository.vgo.VgoFormat
 import org.sonatype.repository.vgo.internal.VgoRecipeSupport
-
-import org.osgi.service.device.Match
-
-import static org.sonatype.nexus.repository.http.HttpMethods.GET
-import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
-import static org.sonatype.repository.vgo.VgoAssetKind.*
 
 /**
  * Vgo proxy repository recipe.
@@ -98,6 +86,7 @@ class VgoProxyRecipe
           .handler(partialFetchHandler)
           .handler(contentHeadersHandler)
           .handler(unitOfWorkHandler)
+          .handler(lastDownloadedHandler)
           .handler(proxyHandler)
           .create())
     }

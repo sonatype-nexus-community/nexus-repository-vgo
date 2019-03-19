@@ -72,7 +72,7 @@ class VgoHostedRecipe
   private ViewFacet configure(final ConfigurableViewFacet facet) {
     Router.Builder builder = new Router.Builder()
 
-    [infoMatcher(), packageMatcher(), moduleMatcher(), listMatcher()].each { matcher ->
+    [infoMatcher(), listMatcher()].each { matcher ->
       builder.route(new Route.Builder().matcher(matcher)
           .handler(timingHandler)
           .handler(securityHandler)
@@ -81,6 +81,20 @@ class VgoHostedRecipe
           .handler(partialFetchHandler)
           .handler(contentHeadersHandler)
           .handler(unitOfWorkHandler)
+          .handler(hostedHandlers.get)
+          .create())
+    }
+
+    [packageMatcher(), moduleMatcher()].each { matcher ->
+      builder.route(new Route.Builder().matcher(matcher)
+          .handler(timingHandler)
+          .handler(securityHandler)
+          .handler(exceptionHandler)
+          .handler(handlerContributor)
+          .handler(partialFetchHandler)
+          .handler(contentHeadersHandler)
+          .handler(unitOfWorkHandler)
+          .handler(lastDownloadedHandler)
           .handler(hostedHandlers.get)
           .create())
     }

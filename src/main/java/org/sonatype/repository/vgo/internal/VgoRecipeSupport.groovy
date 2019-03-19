@@ -15,14 +15,6 @@ package org.sonatype.repository.vgo.internal
 import javax.inject.Inject
 import javax.inject.Provider
 
-import org.sonatype.nexus.repository.view.Context
-import org.sonatype.nexus.repository.view.Matcher
-import org.sonatype.nexus.repository.view.matchers.ActionMatcher
-import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
-import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
-import org.sonatype.repository.vgo.VgoAssetKind
-import org.sonatype.repository.vgo.internal.security.VgoSecurityFacet
-
 import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.RecipeSupport
 import org.sonatype.nexus.repository.Type
@@ -38,12 +30,20 @@ import org.sonatype.nexus.repository.storage.DefaultComponentMaintenanceImpl
 import org.sonatype.nexus.repository.storage.StorageFacet
 import org.sonatype.nexus.repository.storage.UnitOfWorkHandler
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
+import org.sonatype.nexus.repository.view.Context
+import org.sonatype.nexus.repository.view.Matcher
 import org.sonatype.nexus.repository.view.handlers.BrowseUnsupportedHandler
 import org.sonatype.nexus.repository.view.handlers.ConditionalRequestHandler
 import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
+import org.sonatype.nexus.repository.view.handlers.LastDownloadedHandler
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
+import org.sonatype.nexus.repository.view.matchers.ActionMatcher
+import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
+import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
+import org.sonatype.repository.vgo.VgoAssetKind
+import org.sonatype.repository.vgo.internal.security.VgoSecurityFacet
 
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
@@ -115,6 +115,9 @@ abstract class VgoRecipeSupport
 
   @Inject
   NegativeCacheHandler negativeCacheHandler
+
+  @Inject
+  LastDownloadedHandler lastDownloadedHandler
 
   protected VgoRecipeSupport(final Type type, final Format format) {
     super(type, format)
