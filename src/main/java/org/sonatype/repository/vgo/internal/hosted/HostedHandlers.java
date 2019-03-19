@@ -38,7 +38,9 @@ public class HostedHandlers
   private VgoPathUtils pathUtils;
 
   @Inject
-  public HostedHandlers(final VgoPathUtils pathUtils) { this.pathUtils = checkNotNull(pathUtils); }
+  public HostedHandlers(final VgoPathUtils pathUtils) {
+    this.pathUtils = checkNotNull(pathUtils);
+  }
 
   final Handler get = context -> {
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
@@ -102,7 +104,8 @@ public class HostedHandlers
     VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
 
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
-    context.getRepository().facet(VgoHostedFacet.class).upload(path, vgoAttributes, context.getRequest().getPayload(), assetKind);
+    context.getRepository().facet(VgoHostedFacet.class)
+        .upload(path, vgoAttributes, context.getRequest().getPayload(), assetKind);
 
     return ok();
   };

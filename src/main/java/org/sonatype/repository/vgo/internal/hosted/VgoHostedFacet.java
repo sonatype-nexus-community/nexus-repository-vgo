@@ -33,5 +33,6 @@ public interface VgoHostedFacet
 
   Content getList(final String module);
 
-  void upload(final String path, final VgoAttributes vgoAttributes, final Payload payload, final VgoAssetKind assetKind) throws IOException;
+  void upload(final String path, final VgoAttributes vgoAttributes, final Payload payload, final VgoAssetKind assetKind)
+      throws IOException;
 }

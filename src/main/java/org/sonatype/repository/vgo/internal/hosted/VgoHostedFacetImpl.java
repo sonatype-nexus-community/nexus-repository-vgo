@@ -60,7 +60,7 @@ import static org.sonatype.repository.vgo.internal.util.VgoDataAccess.HASH_ALGOR
 @Named
 public class VgoHostedFacetImpl
     extends FacetSupport
-  implements VgoHostedFacet
+    implements VgoHostedFacet
 {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -80,7 +80,8 @@ public class VgoHostedFacetImpl
   @Nullable
   @Transactional
   public Content getInfo(final String path,
-                         final VgoAttributes vgoAttributes) {
+                         final VgoAttributes vgoAttributes)
+  {
     checkNotNull(path);
     String newPath = path.replaceAll("\\.info", "\\.zip");
 
@@ -114,17 +115,18 @@ public class VgoHostedFacetImpl
         .collect(Collectors.joining("\n"));
 
     return new Content(
-      new StreamPayload(
-          new InputStreamSupplier() {
-            @Nonnull
-            @Override
-            public InputStream get() {
-              return new ByteArrayInputStream(listOfVersions.getBytes());
-            }
-          },
-          UNKNOWN_SIZE,
-          ContentTypes.TEXT_PLAIN
-      )
+        new StreamPayload(
+            new InputStreamSupplier()
+            {
+              @Nonnull
+              @Override
+              public InputStream get() {
+                return new ByteArrayInputStream(listOfVersions.getBytes());
+              }
+            },
+            UNKNOWN_SIZE,
+            ContentTypes.TEXT_PLAIN
+        )
     );
   }
 
@@ -174,7 +176,8 @@ public class VgoHostedFacetImpl
   public void upload(final String path,
                      final VgoAttributes vgoAttributes,
                      final Payload payload,
-                     final VgoAssetKind assetKind) throws IOException {
+                     final VgoAssetKind assetKind) throws IOException
+  {
     checkNotNull(vgoAttributes);
     checkNotNull(payload);
 
@@ -202,7 +205,7 @@ public class VgoHostedFacetImpl
     Payload content = getZip(path);
 
     if (content != null) {
-      try (InputStream contentStream = content.openInputStream()){
+      try (InputStream contentStream = content.openInputStream()) {
         InputStream goModStream = CompressedContentExtractor.extractFile(contentStream, "go.mod");
 
         if (goModStream != null) {
