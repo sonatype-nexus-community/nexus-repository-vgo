@@ -27,6 +27,7 @@ import org.sonatype.repository.vgo.internal.metadata.VgoAttributes;
 import org.sonatype.repository.vgo.internal.util.VgoPathUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.sonatype.nexus.repository.http.HttpResponses.created;
 import static org.sonatype.nexus.repository.http.HttpResponses.notFound;
 import static org.sonatype.nexus.repository.http.HttpResponses.ok;
 
@@ -97,6 +98,6 @@ public class HostedHandlers
     context.getRepository().facet(VgoHostedFacet.class)
         .upload(path, vgoAttributes, context.getRequest().getPayload(), assetKind);
 
-    return ok();
+    return created();
   };
 }
