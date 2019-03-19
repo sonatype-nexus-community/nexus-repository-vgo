@@ -64,36 +64,28 @@ public class HostedHandlers
   };
 
   private Content getList(final Context context) {
-    Content content;
     State state = context.getAttributes().require(State.class);
     String module = pathUtils.module(state);
-    content = context.getRepository().facet(VgoHostedFacet.class).getList(module);
-    return content;
+    return context.getRepository().facet(VgoHostedFacet.class).getList(module);
   }
 
   private Content getPackage(final Context context) {
-    Content content;
     State state = context.getAttributes().require(State.class);
     String path = pathUtils.assetPath(state);
-    content = context.getRepository().facet(VgoHostedFacet.class).getPackage(path);
-    return content;
+    return context.getRepository().facet(VgoHostedFacet.class).getPackage(path);
   }
 
   private Content getModule(final Context context) {
-    Content content;
     State state = context.getAttributes().require(State.class);
     String path = pathUtils.assetPath(state);
-    content = context.getRepository().facet(VgoHostedFacet.class).getMod(path);
-    return content;
+    return context.getRepository().facet(VgoHostedFacet.class).getMod(path);
   }
 
   private Content getInfo(final Context context) {
-    Content content;
     State state = context.getAttributes().require(State.class);
     String path = pathUtils.assetPath(state);
     VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
-    content = context.getRepository().facet(VgoHostedFacet.class).getInfo(path, vgoAttributes);
-    return content;
+    return context.getRepository().facet(VgoHostedFacet.class).getInfo(path, vgoAttributes);
   }
 
   final Handler upload = context -> {
