@@ -168,8 +168,8 @@ public class VgoDataAccess
       component = tx.createComponent(bucket, repository.getFormat())
           .name(vgoAttributes.getModule())
           .version(vgoAttributes.getVersion());
+      tx.saveComponent(component);
     }
-    tx.saveComponent(component);
 
     Asset asset = findAsset(tx, bucket, assetPath);
     if (asset == null) {
