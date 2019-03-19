@@ -75,7 +75,6 @@ public class HostedHandlers
     Content content;
     State state = context.getAttributes().require(State.class);
     String path = pathUtils.assetPath(state);
-    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
     content = context.getRepository().facet(VgoHostedFacet.class).getPackage(path);
     return content;
   }
@@ -84,7 +83,6 @@ public class HostedHandlers
     Content content;
     State state = context.getAttributes().require(State.class);
     String path = pathUtils.assetPath(state);
-    VgoAttributes vgoAttributes = pathUtils.getAttributesFromMatcherState(state);
     content = context.getRepository().facet(VgoHostedFacet.class).getMod(path);
     return content;
   }
