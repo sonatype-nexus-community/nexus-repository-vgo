@@ -19,6 +19,8 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.Nullable;
+
 import org.sonatype.goodies.common.ComponentSupport;
 import org.sonatype.goodies.common.Loggers;
 
@@ -40,6 +42,7 @@ public class CompressedContentExtractor
    * @param fileName file to extract
    * @return stream of extracted file
    */
+  @Nullable
   public static InputStream extractFile(final InputStream projectAsStream, final String fileName) {
     try (ZipInputStream zipInputStream = new ZipInputStream(projectAsStream)) {
       ZipEntry nextEntry = zipInputStream.getNextEntry();
