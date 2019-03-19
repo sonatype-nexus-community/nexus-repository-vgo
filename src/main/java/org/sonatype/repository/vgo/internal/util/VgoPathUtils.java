@@ -31,7 +31,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class VgoPathUtils
 {
   /**
-   * Returns the module from a {@link TokenMatcher.State}.
+   * Returns the module from a {@link
+   * TokenMatcher.State}.
    */
   public String module(final TokenMatcher.State state) {
     return match(state, "module");
