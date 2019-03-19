@@ -43,14 +43,13 @@ public class CompressedContentExtractor
   public static InputStream extractFile(final InputStream projectAsStream, final String fileName) {
     try (ZipInputStream zipInputStream = new ZipInputStream(projectAsStream)) {
       ZipEntry nextEntry = zipInputStream.getNextEntry();
-      while (nextEntry != null && !nextEntry.getName().endsWith(fileName)) {
+      while (nextEntry != null) {
+        if (nextEntry.getName().endsWith(fileName)) {
+          ByteArrayOutputStream outputStream = extractEntry(zipInputStream);
+          return new ByteArrayInputStream(outputStream.toByteArray());
+        }
         zipInputStream.closeEntry();
         nextEntry = zipInputStream.getNextEntry();
-      }
-
-      if (nextEntry != null) {
-        ByteArrayOutputStream outputStream = extractEntry(zipInputStream);
-        return new ByteArrayInputStream(outputStream.toByteArray());
       }
     }
     catch (IOException e) {
