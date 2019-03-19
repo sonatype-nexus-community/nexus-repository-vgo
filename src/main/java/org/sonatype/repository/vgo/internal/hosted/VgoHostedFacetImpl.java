@@ -15,7 +15,6 @@ package org.sonatype.repository.vgo.internal.hosted;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
@@ -48,8 +47,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.impl.io.EmptyInputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.stream.Collectors.joining;
+import static org.sonatype.nexus.repository.view.ContentTypes.TEXT_PLAIN;
 import static org.sonatype.nexus.repository.view.Payload.UNKNOWN_SIZE;
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_MODULE;
+import static org.sonatype.repository.vgo.VgoAssetKind.VGO_PACKAGE;
 import static org.sonatype.repository.vgo.internal.util.VgoDataAccess.HASH_ALGORITHMS;
 
 /**
@@ -116,7 +118,7 @@ public class VgoHostedFacetImpl
         .map(asset -> asset.name())
         .map(name -> name.split("/@v/")[1])
         .map((name -> name.replaceAll(".zip", "")))
-        .collect(Collectors.joining("\n"));
+        .collect(joining("\n"));
 
     return new Content(
         new StreamPayload(
@@ -129,7 +131,7 @@ public class VgoHostedFacetImpl
               }
             },
             UNKNOWN_SIZE,
-            ContentTypes.TEXT_PLAIN
+            TEXT_PLAIN
         )
     );
   }
@@ -185,7 +187,7 @@ public class VgoHostedFacetImpl
     checkNotNull(vgoAttributes);
     checkNotNull(payload);
 
-    if (assetKind != VgoAssetKind.VGO_PACKAGE) {
+    if (assetKind != VGO_PACKAGE) {
       throw new IllegalArgumentException("Unsupported AssetKind");
     }
 
@@ -222,7 +224,7 @@ public class VgoHostedFacetImpl
                 public InputStream get() {
                   return goModStream;
                 }
-              }, UNKNOWN_SIZE, ContentTypes.TEXT_PLAIN),
+              }, UNKNOWN_SIZE, TEXT_PLAIN),
               VGO_MODULE);
         }
       }
