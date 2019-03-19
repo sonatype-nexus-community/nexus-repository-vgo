@@ -30,7 +30,6 @@ import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.storage.TempBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload.InputStreamSupplier;
@@ -48,6 +47,7 @@ import org.apache.http.impl.io.EmptyInputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.joining;
+import static org.sonatype.nexus.repository.view.ContentTypes.APPLICATION_JSON;
 import static org.sonatype.nexus.repository.view.ContentTypes.TEXT_PLAIN;
 import static org.sonatype.nexus.repository.view.Payload.UNKNOWN_SIZE;
 import static org.sonatype.repository.vgo.VgoAssetKind.VGO_MODULE;
@@ -87,6 +87,14 @@ public class VgoHostedFacetImpl
     checkNotNull(path);
     String newPath = getZipAssetPathFromInfoPath(path);
 
+    StreamPayload streamPayload = extractInfoFromZip(vgoAttributes, newPath);
+    if (streamPayload == null) {
+      return null;
+    }
+    return new Content(streamPayload);
+  }
+
+  private StreamPayload extractInfoFromZip(final VgoAttributes vgoAttributes, final String newPath) {
     StorageTx tx = UnitOfWork.currentTx();
 
     Asset asset = vgoDataAccess.findAsset(tx, tx.findBucket(getRepository()), newPath);
@@ -97,8 +105,8 @@ public class VgoHostedFacetImpl
     StreamPayload streamPayload = new StreamPayload(
         () -> doGetInfo(asset, vgoAttributes),
         UNKNOWN_SIZE,
-        ContentTypes.APPLICATION_JSON);
-    return new Content(streamPayload);
+        APPLICATION_JSON);
+    return streamPayload;
   }
 
   private String getZipAssetPathFromInfoPath(final String path) {
