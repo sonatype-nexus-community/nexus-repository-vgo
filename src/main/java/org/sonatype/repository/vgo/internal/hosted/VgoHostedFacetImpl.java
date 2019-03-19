@@ -83,7 +83,7 @@ public class VgoHostedFacetImpl
                          final VgoAttributes vgoAttributes)
   {
     checkNotNull(path);
-    String newPath = path.replaceAll("\\.info", "\\.zip");
+    String newPath = getZipAssetPathFromInfoPath(path);
 
     StorageTx tx = UnitOfWork.currentTx();
 
@@ -97,6 +97,10 @@ public class VgoHostedFacetImpl
         UNKNOWN_SIZE,
         ContentTypes.APPLICATION_JSON);
     return new Content(streamPayload);
+  }
+
+  private String getZipAssetPathFromInfoPath(final String path) {
+    return path.replaceAll("\\.info", "\\.zip");
   }
 
   @Transactional
