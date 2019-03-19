@@ -35,7 +35,7 @@ public class CompressedContentExtractor
   private static final Logger logger = Loggers.getLogger(CompressedContentExtractor.class);
 
   /**
-   * Extracrts a file from a zip image
+   * Extracts a file from a zip image
    * @param projectAsStream zip file as a stream
    * @param fileName file to extract
    * @return stream of extracted file
