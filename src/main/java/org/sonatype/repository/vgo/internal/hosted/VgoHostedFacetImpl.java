@@ -137,7 +137,7 @@ public class VgoHostedFacetImpl
       return new ByteArrayInputStream(info.getBytes());
     }
     catch (JsonProcessingException e) {
-      log.warn(String.format("Unable to convert %s to json", vgoInfo.toString()));
+      log.warn(String.format("Unable to convert %s to json", vgoInfo.toString()), e);
     }
     return EmptyInputStream.INSTANCE;
   }
