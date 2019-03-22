@@ -65,10 +65,10 @@ public class VgoDataAccess
    * @return found component or null if not found
    */
   @Nullable
-  public Component findComponent(final StorageTx tx,
-                                 final Repository repository,
-                                 final String name,
-                                 final String version)
+  private Component findComponent(final StorageTx tx,
+                                  final Repository repository,
+                                  final String name,
+                                  final String version)
   {
     Iterable<Component> components = tx.findComponents(
         Query.builder()
@@ -110,6 +110,11 @@ public class VgoDataAccess
     return tx.findAssets(query, ImmutableList.of(repository));
   }
 
+  /**
+   * Save an asset and create blob.
+   *
+   * @return blob content
+   */
   @TransactionalStoreBlob
   public Content doCreateOrSaveAsset(final Repository repository,
                                      final String assetPath,
@@ -129,15 +134,10 @@ public class VgoDataAccess
     return saveAsset(tx, asset, tempBlob, payload);
   }
 
-  /**
-   * Save an asset and create blob.
-   *
-   * @return blob content
-   */
-  public Content saveAsset(final StorageTx tx,
-                           final Asset asset,
-                           final Supplier<InputStream> contentSupplier,
-                           final Payload payload) throws IOException
+  private Content saveAsset(final StorageTx tx,
+                            final Asset asset,
+                            final Supplier<InputStream> contentSupplier,
+                            final Payload payload) throws IOException
   {
     AttributesMap contentAttributes = null;
     String contentType = null;
