@@ -98,13 +98,35 @@ public class VgoDataAccess
    *
    * @return assets associated with a given module
    */
-  public Iterable<Asset> findPackageAssetsForModule(final StorageTx tx, final Repository repository, final String moduleName) {
+  public Iterable<Asset> findPackageAssetsForModule(final StorageTx tx,
+                                                    final Repository repository,
+                                                    final String moduleName)
+  {
     Query query = Query.builder()
         .where(P_NAME).like(moduleName + "/%")
         .and(P_ASSET_KIND).eq(VGO_PACKAGE.name())
         .build();
 
     return tx.findAssets(query, ImmutableList.of(repository));
+  }
+
+  @TransactionalStoreBlob
+  public Content doCreateOrSaveAsset(final Repository repository,
+                                     final String assetPath,
+                                     final VgoAssetKind assetKind,
+                                     final TempBlob tempBlob,
+                                     final Payload payload) throws IOException
+  {
+    StorageTx tx = UnitOfWork.currentTx();
+    Bucket bucket = tx.findBucket(repository);
+
+    Asset asset = findAsset(tx, bucket, assetPath);
+    if (asset == null) {
+      asset = tx.createAsset(bucket, repository.getFormat());
+      asset.name(assetPath);
+      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+    }
+    return saveAsset(tx, asset, tempBlob, payload);
   }
 
   /**
@@ -160,7 +182,7 @@ public class VgoDataAccess
   public Content doCreateOrSaveComponent(final Repository repository,
                                          final VgoAttributes vgoAttributes,
                                          final String assetPath,
-                                         final TempBlob componentContent,
+                                         final TempBlob tempBlob,
                                          final Payload payload,
                                          final VgoAssetKind assetKind) throws IOException
   {
@@ -185,7 +207,7 @@ public class VgoDataAccess
       asset.name(assetPath);
       asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
     }
-    return saveAsset(tx, asset, componentContent, payload);
+    return saveAsset(tx, asset, tempBlob, payload);
   }
 
   public Payload getBlobAsPayload(final StorageTx tx, final Asset asset) {
