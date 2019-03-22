@@ -39,7 +39,6 @@ import org.sonatype.repository.vgo.internal.util.VgoDataAccess;
 import org.sonatype.repository.vgo.internal.util.VgoPathUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.sonatype.repository.vgo.VgoAssetKind.VGO_LIST;
 import static org.sonatype.repository.vgo.internal.util.VgoDataAccess.HASH_ALGORITHMS;
 
 /**
@@ -91,16 +90,14 @@ public class VgoProxyFacetImpl
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
     TokenMatcher.State matcherState = vgoPathUtils.matcherState(context);
 
-    if (VGO_LIST.equals(assetKind)) {
-      return putAsset(content, vgoPathUtils.listPath(matcherState), assetKind);
-    }
-
-    VgoAttributes vgoAttributes = vgoPathUtils.getAttributesFromMatcherState(matcherState);
     switch (assetKind) {
       case VGO_INFO:
       case VGO_MODULE:
       case VGO_PACKAGE:
+        VgoAttributes vgoAttributes = vgoPathUtils.getAttributesFromMatcherState(matcherState);
         return putComponent(vgoAttributes, content, vgoPathUtils.assetPath(matcherState), assetKind);
+      case VGO_LIST:
+        return putAsset(content, vgoPathUtils.listPath(matcherState), assetKind);
       default:
         throw new IllegalStateException("Received an invalid VgoAssetKind of type: " + assetKind.name());
     }
