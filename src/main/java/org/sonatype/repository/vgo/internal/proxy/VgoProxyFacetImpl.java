@@ -89,14 +89,15 @@ public class VgoProxyFacetImpl
   protected Content store(final Context context, final Content content) throws IOException {
     VgoAssetKind assetKind = context.getAttributes().require(VgoAssetKind.class);
     TokenMatcher.State matcherState = vgoPathUtils.matcherState(context);
-    VgoAttributes vgoAttributes = vgoPathUtils.getAttributesFromMatcherState(matcherState);
-    switch(assetKind) {
+
+    switch (assetKind) {
       case VGO_INFO:
       case VGO_MODULE:
       case VGO_PACKAGE:
+        VgoAttributes vgoAttributes = vgoPathUtils.getAttributesFromMatcherState(matcherState);
         return putComponent(vgoAttributes, content, vgoPathUtils.assetPath(matcherState), assetKind);
       case VGO_LIST:
-        return putComponent(vgoAttributes, content, vgoPathUtils.listPath(matcherState), assetKind);
+        return putAsset(content, vgoPathUtils.listPath(matcherState), assetKind);
       default:
         throw new IllegalStateException("Received an invalid VgoAssetKind of type: " + assetKind.name());
     }
@@ -114,10 +115,26 @@ public class VgoProxyFacetImpl
     return vgoDataAccess.toContent(asset, tx.requireBlob(asset.requireBlobRef()));
   }
 
+  private Content putAsset(final Content content,
+                           final String assetPath,
+                           final VgoAssetKind assetKind) throws IOException
+  {
+    StorageFacet storageFacet = facet(StorageFacet.class);
+    try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), HASH_ALGORITHMS)) {
+      return vgoDataAccess.doCreateOrSaveAsset(getRepository(),
+          assetPath,
+          assetKind,
+          tempBlob,
+          content
+      );
+    }
+  }
+
   private Content putComponent(final VgoAttributes vgoAttributes,
                                final Content content,
                                final String assetPath,
-                               final VgoAssetKind assetKind) throws IOException {
+                               final VgoAssetKind assetKind) throws IOException
+  {
     StorageFacet storageFacet = facet(StorageFacet.class);
     try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), HASH_ALGORITHMS)) {
       return vgoDataAccess.doCreateOrSaveComponent(getRepository(),
