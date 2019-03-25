@@ -15,6 +15,8 @@ package org.sonatype.repository.vgo.internal.hosted;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
@@ -46,7 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.impl.io.EmptyInputStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.stream.Collectors.joining;
+import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
 import static org.sonatype.nexus.repository.view.ContentTypes.APPLICATION_JSON;
 import static org.sonatype.nexus.repository.view.ContentTypes.TEXT_PLAIN;
 import static org.sonatype.nexus.repository.view.Payload.UNKNOWN_SIZE;
@@ -120,13 +122,20 @@ public class VgoHostedFacetImpl
 
     StorageTx tx = UnitOfWork.currentTx();
 
-    Iterable<Asset> assetsForModule = vgoDataAccess.findPackageAssetsForModule(tx, getRepository(), module);
+    Iterable<Asset> assetsForModule = vgoDataAccess.findAssetsForModule(tx, getRepository(), module);
 
-    String listOfVersions = StreamSupport.stream(assetsForModule.spliterator(), false)
-        .map(asset -> asset.name())
+    List<String> collection = StreamSupport.stream(assetsForModule.spliterator(), false)
+        .filter(asset -> VGO_PACKAGE.name().equals(asset.formatAttributes().get(P_ASSET_KIND)))
+        .map(Asset::name)
         .map(name -> name.split("/@v/")[1])
         .map((name -> name.replaceAll(".zip", "")))
-        .collect(joining("\n"));
+        .collect(Collectors.toList());
+
+    if (collection.isEmpty()) {
+      return null;
+    }
+
+    String listOfVersions = String.join("\n", collection);
 
     return new Content(
         new StreamPayload(

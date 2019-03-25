@@ -47,7 +47,6 @@ import static org.sonatype.nexus.common.hash.HashAlgorithm.SHA1;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
 import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_VERSION;
 import static org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter.P_NAME;
-import static org.sonatype.repository.vgo.VgoAssetKind.VGO_PACKAGE;
 
 /**
  * Shared code between Vgo facets.
@@ -94,17 +93,16 @@ public class VgoDataAccess
   }
 
   /**
-   * Finds all the mod files for a given module
+   * Finds all the assets for a given module
    *
    * @return assets associated with a given module
    */
-  public Iterable<Asset> findPackageAssetsForModule(final StorageTx tx,
-                                                    final Repository repository,
-                                                    final String moduleName)
+  public Iterable<Asset> findAssetsForModule(final StorageTx tx,
+                                             final Repository repository,
+                                             final String moduleName)
   {
     Query query = Query.builder()
         .where(P_NAME).like(moduleName + "/%")
-        .and(P_ASSET_KIND).eq(VGO_PACKAGE.name())
         .build();
 
     return tx.findAssets(query, ImmutableList.of(repository));
